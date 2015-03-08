@@ -3,13 +3,21 @@ from flask                          import Flask, render_template, request, sess
 from ConfigParser                   import ConfigParser
 import os, time, sys, argparse
 
-application = Flask(__name__)
+from app import application
+
 application.debug = True
 
-@application.route('/')
-@application.route('/index', methods=["GET", "POST"])
-def index():
-    return "Hello World!"
+# Get the port to run on
+server_port = None
+# Check whether the app is running on Beanstalk
+# If the app is running on beanstalk the configuration
+# file will be loaded and SERVER_PORT will be set as 80
+if 'SERVER_PORT' in os.environ:
+    server_port = int(os.environ['SERVER_PORT'])
 
-if __name__ == "__main__":
-    application.run(debug = True, host='0.0.0.0')
+# Check if it is a local computer
+if server_port is None:
+    server_port = 5000
+
+# Run the application
+application.run(debug=True, port=server_port, host='0.0.0.0')
