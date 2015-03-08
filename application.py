@@ -3,7 +3,10 @@ from flask                          import Flask, render_template, request, sess
 from ConfigParser                   import ConfigParser
 import os, time, sys, argparse
 
-from app import application
+from flask import Flask
+
+application = Flask(__name__)
+
 
 application.debug = True
 
