@@ -19,5 +19,11 @@ if 'SERVER_PORT' in os.environ:
 if server_port is None:
     server_port = 5000
 
+# Application routes defined here
+@application.route('/index')
+def index():
+    return "Hello World!"
+
+
 # Run the application
 application.run(debug=True, port=server_port, host='0.0.0.0')
