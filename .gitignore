@@ -1,4 +1,6 @@
 flask/
 tmp/
+logs/
+bus.wsgi
 
 .elasticbeanstalk/
