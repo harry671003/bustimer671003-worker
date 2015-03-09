@@ -2,8 +2,7 @@
 from flask import Flask
 import os
 
-application = Flask(__name__)
-application.debug = True
+from app import application
 
 server_port = None
 # Default to environment variables for server port - easier for elastic beanstalk configuration
