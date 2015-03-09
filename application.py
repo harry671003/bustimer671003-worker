@@ -29,4 +29,4 @@ def index():
 
 
 # Run the application
-application.run(debug=True, port=server_port, host='0.0.0.0')
+application.run(debug=True, host='0.0.0.0')
