@@ -1,29 +1,19 @@
-from flask import Flask
-import os
-
+from flask                          import Flask, render_template, request, session, flash, redirect, jsonify, json
+import os, time, sys, argparse
 
 application = Flask(__name__)
-
-
 application.debug = True
 
-# Get the port to run on
-server_port = None
-# Check whether the app is running on Beanstalk
-# If the app is running on beanstalk the configuration
-# file will be loaded and SERVER_PORT will be set as 80
+# Default to environment variables for server port - easier for elastic beanstalk configuration
 if 'SERVER_PORT' in os.environ:
-    server_port = int(os.environ['SERVER_PORT'])
+    serverPort = int(os.environ['SERVER_PORT'])
 
-# Check if it is a local computer
-if server_port is None:
-    server_port = 5000
+if serverPort is None:
+    serverPort = 5000
 
-# Application routes defined here
-@application.route('/index')
+@application.route('/')
 def index():
-    return "Hello World!"
+	return "Hello World"
 
-
-# Run the application
-application.run(debug=True, host='0.0.0.0')
+if __name__ == "__main__":
+        application.run(debug = True, port=serverPort, host='0.0.0.0')
