@@ -4,10 +4,5 @@ from app import application
 def index():
 	return "Welcome to Bus App!"
 
-@appliction.route('/user/login')
-def login():
-	return "login"
-
-@application.route('/user/signup')
-def signup():
-	return "signup"
+# Add /user/* views
+from user import views
