@@ -1,9 +1,6 @@
-#!flask/bin/python
-from flask                          import Flask, render_template, request, session, flash, redirect, jsonify, json
-from ConfigParser                   import ConfigParser
-import os, time, sys, argparse
-
 from flask import Flask
+import os
+
 
 application = Flask(__name__)
 
