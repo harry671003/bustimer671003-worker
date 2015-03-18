@@ -3,6 +3,7 @@ from flask import request
 from flask.ext.login import LoginManager
 import json
 from lib.helpers import message as message_helper
+import os
 
 # initialize login manager
 login_manager = LoginManager()
@@ -17,6 +18,6 @@ def login():
 def signup():
 	return "signup"
 
-@application.route('/user/signup', methods=['POST'])
+@application.route('/user/signup', methods=['GET'])
 def signup():
-	return "signup"
+	return str(os.environ)
