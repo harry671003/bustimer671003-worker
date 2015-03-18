@@ -1,0 +1,15 @@
+Users
+======
+id device_id
+
+Bus
+===
+id name type
+
+BusStops
+========
+id bus_id stop_id time 
+
+Stops
+=====
+id lon lat name
