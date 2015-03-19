@@ -41,9 +41,8 @@ def getDynamoDBConnection(config=None, endpoint=None, port=None, local=False, us
             if config.has_option('dynamodb', 'endpoint'):
                 params['host'] = config.get('dynamodb', 'endpoint')
 
-            if config.has_option('dynamodb', 'aws_access_key_id'):
-                params['aws_access_key_id'] = config.get('dynamodb', 'aws_access_key_id')
-                params['aws_secret_access_key'] = config.get('dynamodb', 'aws_secret_access_key')
+        params['aws_access_key_id'] = environ["AWS_ACCESS_KEY_ID"]
+        params['aws_secret_access_key'] = environ["AWS_SECRET_KEY"]
 
         # Use the endpoint specified on the command-line to trump the config file
         if endpoint is not None:
@@ -61,42 +60,3 @@ def getDynamoDBConnection(config=None, endpoint=None, port=None, local=False, us
 
         db = DynamoDBConnection(**params)
     return db
-
-def createGamesTable(db):
-
-    try:
-        hostStatusDate = GlobalAllIndex("HostId-StatusDate-index",
-                                        parts=[HashKey("HostId"), RangeKey("StatusDate")],
-                                        throughput={
-                                            'read': 1,
-                                            'write': 1
-                                        })
-        opponentStatusDate  = GlobalAllIndex("OpponentId-StatusDate-index",
-                                        parts=[HashKey("OpponentId"), RangeKey("StatusDate")],
-                                        throughput={
-                                            'read': 1,
-                                            'write': 1
-                                        })
-
-        #global secondary indexes
-        GSI = [hostStatusDate, opponentStatusDate]
-
-        gamesTable = Table.create("Games",
-                    schema=[HashKey("GameId")],
-                    throughput={
-                        'read': 1,
-                        'write': 1
-                    },
-                    global_indexes=GSI,
-                    connection=db)
-
-    except JSONResponseError, jre:
-        try:
-            gamesTable = Table("Games", connection=db)
-        except Exception, e:
-            print "Games Table doesn't exist."
-    finally:
-        return gamesTable 
-
-#parse command line args for credentials and such
-#for now just assume local is when args are empty

@@ -3,17 +3,17 @@ from ConfigParser import ConfigParser
 from lib.dynamodb.connection_manager import ConnectionManager
 import os
 from flask.ext.login import LoginManager
+from app.models.user import User
 
 # Create the application
 application = Flask(__name__)
 application.debug = True
 application.secret_key = "dfadfasfafa"
 
+
 # Login Manager
 login_manager = LoginManager()
 login_manager.init_app(application)
-
-
 
 # Read environment variable for whether to read config from EC2 instance metadata
 use_instance_metadata = ""

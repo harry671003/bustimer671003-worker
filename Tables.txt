@@ -6,7 +6,7 @@ Bus
 ===
 id name type
 
-BusStops
+Bus-Stops
 ========
 id bus_id stop_id time 
 

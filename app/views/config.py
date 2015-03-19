@@ -1,21 +1,19 @@
-from app import application
+from app import application, cm
 from flask import request, Response, render_template
 from flask.ext.login import LoginManager
+from lib.helpers.login import login_required
 import json
 from lib.helpers import message as message_helper
 # Get the connection manager
-from app import cm
 from boto.dynamodb2.fields import HashKey, RangeKey, GlobalAllIndex
 from boto.dynamodb2.table import Table
-
-
-
 
 # Base Url for this app 
 base_url = '/config'
 
 # setup the db
 @application.route(base_url + '/setupdb', methods=['GET'])
+@login_required(1)
 def setup_db():
 	# Create the users table
 	try:
@@ -91,6 +89,7 @@ def setup_db():
 	return "Done!"
 
 @application.route(base_url + '/showdb', methods=['GET'])
+@login_required(1)
 def show_db():
 	tables = cm.db.list_tables()
 	table_data = []
