@@ -41,8 +41,8 @@ def getDynamoDBConnection(config=None, endpoint=None, port=None, local=False, us
             if config.has_option('dynamodb', 'endpoint'):
                 params['host'] = config.get('dynamodb', 'endpoint')
 
-        params['aws_access_key_id'] = environ["AWS_ACCESS_KEY_ID"]
-        params['aws_secret_access_key'] = environ["AWS_SECRET_KEY"]
+        params['aws_access_key_id'] = os.environ["AWS_ACCESS_KEY_ID"]
+        params['aws_secret_access_key'] = os.environ["AWS_SECRET_KEY"]
 
         # Use the endpoint specified on the command-line to trump the config file
         if endpoint is not None:
