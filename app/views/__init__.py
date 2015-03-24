@@ -1,41 +1,15 @@
-from app import application, cm, login_manager
-from flask.ext.login import current_user
-from flask import g, redirect, url_for
-from lib.helpers.login import login_required
-from app.models.user import User
-
-# Load the user
-@login_manager.user_loader
-def load_user(userid):
-	# Check if user is root
-	if userid == "root":
-		return User(userid, 1)
-	else:
-		return None
-
-# Unauthorized access
-@login_manager.unauthorized_handler
-def unauthorized():
-    # Redirect to the login url
-    return redirect(url_for('admin_login'))
-
-# Add current user to Flask Global g
-@application.before_request
-def before_request():
-	g.user = current_user
+from app import application
+import logging
+from flask import request, Response
 
 # Home page
-@application.route('/')
-@application.route('/index')
+@application.route('/', methods=["GET", "POST"])
 def index():
-	return "Welcome to Bus App!"
-
-# Add other views
-# Add /user/* views
-from app.views import user
-
-# Add /config/* views
-from app.views import config
-
-# Add /admin/* views
-from app.views import admin
+	response = None
+	if request.json is None:
+		# Expect application/json request
+		response = Response("NO JSON", status=415)
+	else:
+		logging.log('Error processing message: %s' % request.json)
+		response = Response("ERROR", status=500)
+	return response
