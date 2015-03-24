@@ -11,5 +11,5 @@ def index():
 		response = Response("NO JSON", status=415)
 	else:
 		logging.log('Error processing message: %s' % request.json)
-		response = Response("ERROR", status=500)
+		response = Response("ERROR", status=200)
 	return response
