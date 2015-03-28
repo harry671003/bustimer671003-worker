@@ -8,7 +8,7 @@ from boto.dynamodb2.table import Table
 @application.route('/', methods=["PUT", "POST", "GET"])
 def index():
 	response = None
-	data = jsonify(json.loads(request.data))
+	data = request.data
 	test_table = Table('test', connection=cm.db)
 	test_table.put_item(data={
 		"id": data
