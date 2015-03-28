@@ -11,7 +11,7 @@ from datetime import datetime
 @application.route('/', methods=["PUT", "POST", "GET"])
 def index():
 	response = None
-	decoded = request.get_data()
+	decoded = base64.b64decode(request.get_data())
 	test_table = Table('test', connection=cm.db)
 	test_table.put_item(data={
 		"id": sha1(str(datetime.now())).hexdigest(),
