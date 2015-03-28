@@ -14,7 +14,7 @@ def index():
 	decoded = request.get_data()
 	test_table = Table('test', connection=cm.db)
 	test_table.put_item(data={
-		"id": sha1(str(datetime.now())),
+		"id": sha1(str(datetime.now())).hexdigest(),
 		"data": decoded
 	})
 	response = Response("OK!", status=200)
