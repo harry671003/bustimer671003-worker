@@ -1,7 +1,5 @@
 boto==2.36.0
 Flask==0.9
-flask-dynamo==0.0.4
-Flask-Login==0.2.11
 itsdangerous==0.24
 Jinja2==2.7.3
 MarkupSafe==0.23
