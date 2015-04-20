@@ -12,12 +12,14 @@ from boto.dynamodb2.exceptions import ItemNotFound
 from lib.helpers.coords import Coords
 from lib.helpers.tables import tb_stops, tb_stops_loc
 from lib.helpers.security import generate_stopid
+from lib.helpers.time import get_xhd_from_time
 
 class Geocode:
 	__earth_radius = 6371
 
 	def __init__(self):
 		self.email = "bussingtime@gmail.com"
+		self.default_threshold = get_xhd_from_time(minute=5)
 
 	# Get the necessary difference between lat and lon
 	# for a distance diff of d meters
@@ -79,12 +81,12 @@ class Geocode:
 
 		response = urllib2.urlopen(request)
 
-
 		# Get the geo coded data
 		geocoded = json.loads(response.read())
 		# Extract the place details
 		place_data = {
 			"name": None,
+			"sublocality": None,
 			"lat": None,
 			"lon": None,
 			"country": None,
@@ -99,48 +101,41 @@ class Geocode:
 
 			# Get the top result
 			top_result = geocoded["results"][0]
-
-			# Go through each address components and get the necessary 
-			# details
-			for addr_comp in top_result["address_components"]:
-				addr_types = addr_comp["types"]
-				# Check for busstation
-				if place_data["name"] is None:
-					if "bus_station" in addr_types or \
-						"transit_station" in addr_types:
-						place_data["name"] = addr_comp["long_name"]
-						continue
-				
-				# Check for level_2
-				if place_data["level_2"] is None:
-					if "administrative_area_level_2" in addr_types:
-						place_data["level_2"] = addr_comp["long_name"]
-						continue
-
-				# Check for level_1
-				if place_data["level_1"] is None:
-					if "administrative_area_level_1" in addr_types:
-						place_data["level_1"] = addr_comp["long_name"]
-						continue
-
-				# Check for country
-				if place_data["country"] is None:
-					if "country" in addr_types:
-						place_data["country"] = addr_comp["long_name"]
-						continue
-
-			try:
-				# Get the original lat and lon
-				lat = top_result["geometry"]["location"]["lat"]
-				lon = top_result["geometry"]["location"]["lon"]
-			except KeyError:
-				# If not present set to
-				# original
-				place_data["lat"] = lat
-				place_data["lon"] = lon
 		elif status == "ZERO_RESULTS":
-			# No results found
-			return None
+			# No results found for bus_station
+			# Do without this restriction
+			del params["result_type"]
+			# Encode the parameters in url
+			data = urllib.urlencode(params)
+
+			# Send request to nominatim servers
+			request = urllib2.Request(url + "?" + data)
+
+			response = urllib2.urlopen(request)
+
+			# Get the geo coded data
+			geocoded = json.loads(response.read())
+			
+			# Check the status
+			status = geocoded["status"]
+			if status == "OK":
+				# Successfully got the data
+				# Get the top result
+				found = False
+				for result in geocoded["results"]:
+					addr_comp = result["address_components"][0]
+					if "transit_station" in addr_comp["types"] \
+						or "bus_station" in addr_comp["types"]:
+						top_result = result
+						found = True
+						break
+
+				# After going through all no busstation or transit station found
+				if not found:
+					return None
+			else:
+				# Some other status
+				return None
 		elif status == "OVER_QUERY_LIMIT":
 			# Query limit passed
 			return None
@@ -148,6 +143,50 @@ class Geocode:
 			# Other errors
 			# server, request denied, invalid request
 			return None
+
+		# Check for busstation
+		place_data["name"] = top_result["address_components"][0]["long_name"]
+		# Go through each address components and get the necessary 
+		# details
+		for addr_comp in top_result["address_components"]:
+			addr_types = addr_comp["types"]
+			# Check for sublocality
+			if place_data["level_2"] is None:
+				if "sublocality_level_1" in addr_types:
+					place_data["sublocality"] = addr_comp["long_name"]
+					continue
+			# Check for level_2
+			if place_data["level_2"] is None:
+				if "administrative_area_level_2" in addr_types:
+					place_data["level_2"] = addr_comp["long_name"]
+					continue
+
+			# Check for level_1
+			if place_data["level_1"] is None:
+				if "administrative_area_level_1" in addr_types:
+					place_data["level_1"] = addr_comp["long_name"]
+					continue
+
+			# Check for country
+			if place_data["country"] is None:
+				if "country" in addr_types:
+					place_data["country"] = addr_comp["long_name"]
+					continue
+
+		try:
+			# Get the original lat and lon
+			place_data["lat"]  = top_result["geometry"]["location"]["lat"]
+			place_data["lon"] = top_result["geometry"]["location"]["lng"]
+		except KeyError:
+			# If not present set to
+			# original
+			place_data["lat"] = lat
+			place_data["lon"] = lon
+
+		# In case of private busstand No 1 and private busstand No 2
+		if place_data["sublocality"]:
+			place_data["name"] = place_data["sublocality"] + " " + place_data["name"]
+		
 		return place_data
 
 	# Reverse geo-coding
@@ -173,11 +212,8 @@ class Geocode:
 				}
 				# Check if the id already exists
 				try:
-					print "[+] start get"
 					tb_stops.get_item(stop_id=stop_data["stop_id"])
-					print "[+] end get"
 				except ItemNotFound, e:
-					print "[+] excetpion"
 					break
 
 			# Append the other data
@@ -186,6 +222,7 @@ class Geocode:
 			stop_data["level_1"] 	= gmap_result["level_1"].lower()
 			stop_data["level_2"] 	= gmap_result["level_2"].lower()
 			stop_data["country"] 	= gmap_result["country"].lower()
+			stop_data["threshold"]  = self.default_threshold
 
 			# insert to table
 			tb_stops.put_item(data=stop_data)

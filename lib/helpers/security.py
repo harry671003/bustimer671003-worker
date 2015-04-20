@@ -20,3 +20,5 @@ def generate_stopid(stop_name):
 	return hashlib.sha1(
 		str(uuid.uuid4()) + generate_random_string(40) + stop_name
 	).hexdigest()
+
+generate_128bit_id = generate_stopid
